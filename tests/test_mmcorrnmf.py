@@ -4,7 +4,7 @@ import pytest
 from anndata import AnnData
 from mudata import MuData
 
-from salamander.models.mmcorrnmf import MultimodalCorrNMF
+from sonata.models.mmcorrnmf import MultimodalCorrNMF
 
 PATH = "tests/test_data"
 PATH_TEST_DATA = f"{PATH}/models/multimodal_corrnmf"

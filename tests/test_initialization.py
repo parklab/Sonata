@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from salamander.initialization import initialize
+from sonata.initialization import initialize
 
 PATH = "tests/test_data"
 PATH_TEST_DATA = f"{PATH}/initialization"

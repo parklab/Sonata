@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from salamander.models import _utils_klnmf
+from sonata.models import _utils_klnmf
 
 PATH = "tests/test_data"
 PATH_TEST_DATA = f"{PATH}/models/utils_klnmf"

@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from seaborn.matrix import ClusterGrid
 
 
-def set_salamander_style():
+def set_sonata_style():
     sns.set_context("notebook")
     sns.set_style("ticks")
     params = {

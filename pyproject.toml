@@ -1,13 +1,13 @@
 [tool.poetry]
-name = "salamander-learn"
-version = "0.4.2"
-description = "Salamander is a non-negative matrix factorization framework for signature analysis"
+name = "sonata-learn"
+version = "0.1.0"
+description = "A Python toolkit for nonnegative matrix factorization-based signature analysis"
 license = "MIT"
 authors = ["Benedikt Geiger"]
 maintainers = [
-    "Benedikt Geiger <benedikt_geiger@hms.harvard.edu>",
+    "Benedikt Geiger <benedikt_geiger@g.harvard.edu>",
 ]
-packages = [{ include = "salamander", from = "src" }]
+packages = [{ include = "sonata", from = "src" }]
 
 
 readme = "README.md"

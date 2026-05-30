@@ -1,5 +1,5 @@
 """
-Salamander: a non-negative matrix factorization framework for signature analysis
+Sonata: a non-negative matrix factorization framework for signature analysis
 ================================================================================
 """
 
@@ -9,7 +9,7 @@ from . import tools as tl
 
 __version__ = "0.4.2"
 
-pl.set_salamander_style()
+pl.set_sonata_style()
 
 __all__ = [
     "__version__",

@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from anndata import AnnData
 
-from salamander.models import mvnmf
+from sonata.models import mvnmf
 
 PATH = "tests/test_data"
 PATH_TEST_DATA = f"{PATH}/models/mvnmf"
