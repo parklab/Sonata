@@ -2,14 +2,12 @@
 A collection of NMF algorithms
 """
 
-from .corrnmf_det import CorrNMFDet
+from .corrnmf import CorrNMF
 from .klnmf import KLNMF
-from .mmcorrnmf import MultimodalCorrNMF
 from .mvnmf import MvNMF
 
 __all__ = [
-    "CorrNMFDet",
+    "CorrNMF",
     "KLNMF",
-    "MultimodalCorrNMF",
     "MvNMF",
 ]

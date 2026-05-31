@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from anndata import AnnData
 
-from sonata.models import corrnmf_det
+from sonata.models import CorrNMF
 
 PATH = "tests/test_data"
 PATH_TEST_DATA = f"{PATH}/models/corrnmf"
@@ -30,8 +30,8 @@ def path_suffix(n_signatures, dim_embeddings):
 
 
 @pytest.fixture
-def sample_scalings_init(path_suffix):
-    return np.load(f"{PATH_TEST_DATA}/sample_scalings_init_{path_suffix}")
+def sample_offsets_init(path_suffix):
+    return np.load(f"{PATH_TEST_DATA}/sample_offsets_init_{path_suffix}")
 
 
 @pytest.fixture
@@ -40,9 +40,9 @@ def sample_embeddings_init(path_suffix):
 
 
 @pytest.fixture
-def adata(counts, sample_scalings_init, sample_embeddings_init):
+def adata(counts, sample_offsets_init, sample_embeddings_init):
     adata = AnnData(counts)
-    adata.obs["scalings"] = sample_scalings_init
+    adata.obs["offsets"] = sample_offsets_init
     adata.obsm["embeddings"] = sample_embeddings_init
     return adata
 
@@ -53,8 +53,8 @@ def signatures_mat_init(path_suffix):
 
 
 @pytest.fixture
-def signature_scalings_init(path_suffix):
-    return np.load(f"{PATH_TEST_DATA}/signature_scalings_init_{path_suffix}")
+def signature_offsets_init(path_suffix):
+    return np.load(f"{PATH_TEST_DATA}/signature_offsets_init_{path_suffix}")
 
 
 @pytest.fixture
@@ -64,11 +64,11 @@ def signature_embeddings_init(path_suffix):
 
 @pytest.fixture
 def asignatures_init(
-    adata, signatures_mat_init, signature_scalings_init, signature_embeddings_init
+    adata, signatures_mat_init, signature_offsets_init, signature_embeddings_init
 ):
     asignatures = AnnData(signatures_mat_init)
     asignatures.var_names = adata.var_names
-    asignatures.obs["scalings"] = signature_scalings_init
+    asignatures.obs["offsets"] = signature_offsets_init
     asignatures.obsm["embeddings"] = signature_embeddings_init
     return asignatures
 
@@ -89,10 +89,9 @@ def model_init(
     asignatures_init,
     variance_init,
 ):
+    """Construct a CorrNMF model from fixture arrays."""
     n_signatures, dim_embeddings = asignatures_init.obsm["embeddings"].shape
-    model = corrnmf_det.CorrNMFDet(
-        n_signatures=n_signatures, dim_embeddings=dim_embeddings
-    )
+    model = CorrNMF(n_signatures=n_signatures, dim_embeddings=dim_embeddings)
     model.adata = adata
     model.asignatures = asignatures_init
     model.compute_exposures()
@@ -115,13 +114,13 @@ def signatures_mat_updated(path_suffix):
 
 
 @pytest.fixture
-def signature_scalings_updated(path_suffix):
-    return np.load(f"{PATH_TEST_DATA}/signature_scalings_updated_{path_suffix}")
+def signature_offsets_updated(path_suffix):
+    return np.load(f"{PATH_TEST_DATA}/signature_offsets_updated_{path_suffix}")
 
 
 @pytest.fixture
-def sample_scalings_updated(path_suffix):
-    return np.load(f"{PATH_TEST_DATA}/sample_scalings_updated_{path_suffix}")
+def sample_offsets_updated(path_suffix):
+    return np.load(f"{PATH_TEST_DATA}/sample_offsets_updated_{path_suffix}")
 
 
 @pytest.fixture
@@ -139,23 +138,23 @@ def variance_updated(path_suffix):
     return np.load(f"{PATH_TEST_DATA}/variance_updated_{path_suffix}")
 
 
-class TestUpdatesCorrNMFDet:
+class TestUpdatesCorrNMF:
     def test_update_signatures(self, model_init, signatures_mat_updated):
         model_init.update_signatures()
         assert np.allclose(model_init.asignatures.X, signatures_mat_updated)
 
-    def test_update_signature_scalings(
-        self, model_init, _aux, signature_scalings_updated
+    def test_update_signature_offsets(
+        self, model_init, _aux, signature_offsets_updated
     ):
-        model_init.update_signature_scalings(_aux)
+        model_init.update_signature_offsets(_aux)
         assert np.allclose(
-            model_init.asignatures.obs["scalings"].values, signature_scalings_updated
+            model_init.asignatures.obs["offsets"].values, signature_offsets_updated
         )
 
-    def test_update_sample_scalings(self, model_init, sample_scalings_updated):
-        model_init.update_sample_scalings()
+    def test_update_sample_offsets(self, model_init, sample_offsets_updated):
+        model_init.update_sample_offsets()
         assert np.allclose(
-            model_init.adata.obs["scalings"].values, sample_scalings_updated
+            model_init.adata.obs["offsets"].values, sample_offsets_updated
         )
 
     def test_update_signature_embeddings(
@@ -180,10 +179,10 @@ class TestUpdatesCorrNMFDet:
 
 
 @pytest.mark.parametrize("n_signatures,dim_embeddings", [(1, 1), (2, 1), (2, 2)])
-class TestGivenParametersCorrNMFDet:
+class TestGivenParametersCorrNMF:
     @pytest.fixture
     def model(self, n_signatures, dim_embeddings):
-        return corrnmf_det.CorrNMFDet(
+        return CorrNMF(
             n_signatures=n_signatures,
             dim_embeddings=dim_embeddings,
             min_iterations=3,
@@ -205,19 +204,19 @@ class TestGivenParametersCorrNMFDet:
                 given_asignatures.X, model.asignatures.X[:n_given_signatures, :]
             )
 
-    def test_given_signature_scalings(self, model, adata):
-        given_signature_scalings = np.random.uniform(size=model.n_signatures)
+    def test_given_signature_offsets(self, model, adata):
+        given_signature_offsets = np.random.uniform(size=model.n_signatures)
         model.fit(
-            adata, given_parameters={"signature_scalings": given_signature_scalings}
+            adata, given_parameters={"signature_offsets": given_signature_offsets}
         )
         assert np.allclose(
-            given_signature_scalings, model.asignatures.obs["scalings"].values
+            given_signature_offsets, model.asignatures.obs["offsets"].values
         )
 
-    def test_given_sample_scalings(self, model, adata):
-        given_sample_scalings = np.random.uniform(size=adata.n_obs)
-        model.fit(adata, given_parameters={"sample_scalings": given_sample_scalings})
-        assert np.allclose(given_sample_scalings, model.adata.obs["scalings"].values)
+    def test_given_sample_offsets(self, model, adata):
+        given_sample_offsets = np.random.uniform(size=adata.n_obs)
+        model.fit(adata, given_parameters={"sample_offsets": given_sample_offsets})
+        assert np.allclose(given_sample_offsets, model.adata.obs["offsets"].values)
 
     def test_given_signature_embeddings(self, model, adata):
         given_signature_embeddings = np.random.uniform(
