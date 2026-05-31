@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from anndata import AnnData
 
-from sonata.models import corrnmf_det
+from sonata.models import CorrNMF
 
 PATH = "tests/test_data"
 PATH_TEST_DATA = f"{PATH}/models/corrnmf"
@@ -90,9 +90,7 @@ def model_init(
     variance_init,
 ):
     n_signatures, dim_embeddings = asignatures_init.obsm["embeddings"].shape
-    model = corrnmf_det.CorrNMFDet(
-        n_signatures=n_signatures, dim_embeddings=dim_embeddings
-    )
+    model = CorrNMF(n_signatures=n_signatures, dim_embeddings=dim_embeddings)
     model.adata = adata
     model.asignatures = asignatures_init
     model.compute_exposures()
@@ -139,7 +137,7 @@ def variance_updated(path_suffix):
     return np.load(f"{PATH_TEST_DATA}/variance_updated_{path_suffix}")
 
 
-class TestUpdatesCorrNMFDet:
+class TestUpdatesCorrNMF:
     def test_update_signatures(self, model_init, signatures_mat_updated):
         model_init.update_signatures()
         assert np.allclose(model_init.asignatures.X, signatures_mat_updated)
@@ -180,10 +178,10 @@ class TestUpdatesCorrNMFDet:
 
 
 @pytest.mark.parametrize("n_signatures,dim_embeddings", [(1, 1), (2, 1), (2, 2)])
-class TestGivenParametersCorrNMFDet:
+class TestGivenParametersCorrNMF:
     @pytest.fixture
     def model(self, n_signatures, dim_embeddings):
-        return corrnmf_det.CorrNMFDet(
+        return CorrNMF(
             n_signatures=n_signatures,
             dim_embeddings=dim_embeddings,
             min_iterations=3,
