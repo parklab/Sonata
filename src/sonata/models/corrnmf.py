@@ -83,7 +83,7 @@ class CorrNMF(SignatureNMF):
         )
         self.adata.obs["reconstruction_error"] = errors
 
-    def objective_function(self, penalize_sample_embeddings: bool = True) -> float:
+    def objective_function(self) -> float:
         """
         The evidence lower bound (ELBO)
         """
@@ -94,7 +94,6 @@ class CorrNMF(SignatureNMF):
             self.asignatures.obsm["embeddings"],
             self.adata.obsm["embeddings"],
             self.variance,
-            penalize_sample_embeddings=penalize_sample_embeddings,
         )
 
     @property

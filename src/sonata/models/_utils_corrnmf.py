@@ -59,7 +59,6 @@ def elbo_corrnmf(
     signature_embeddings: np.ndarray,
     sample_embeddings: np.ndarray,
     variance: float,
-    penalize_sample_embeddings: bool = True,
 ) -> float:
     """
     The evidence lower bound (ELBO) of correlated NMF.
@@ -83,19 +82,14 @@ def elbo_corrnmf(
 
     variance : float
 
-    penalize_sample_embeddings : bool, default=True
-        If False, the sample embedding penalty is not added.
-        This is useful for the implementation of multimodal correlated NMF.
     """
     n_signatures, dim_embeddings = signature_embeddings.shape
     n_samples = sample_embeddings.shape[0]
     elbo = poisson_llh(data_mat.T, signatures_mat.T, exposures_mat.T)
     elbo -= 0.5 * dim_embeddings * n_signatures * np.log(2 * np.pi * variance)
     elbo -= np.sum(signature_embeddings**2) / (2 * variance)
-
-    if penalize_sample_embeddings:
-        elbo -= 0.5 * dim_embeddings * n_samples * np.log(2 * np.pi * variance)
-        elbo -= np.sum(sample_embeddings**2) / (2 * variance)
+    elbo -= 0.5 * dim_embeddings * n_samples * np.log(2 * np.pi * variance)
+    elbo -= np.sum(sample_embeddings**2) / (2 * variance)
 
     return elbo
 
@@ -183,7 +177,7 @@ def update_sample_scalings(
 def objective_function_embedding(
     embedding: np.ndarray,
     embeddings_other: np.ndarray,
-    scaling: float | np.ndarray,
+    scaling: float,
     scalings_other: np.ndarray,
     variance: float,
     aux_vector: np.ndarray,
@@ -202,12 +196,9 @@ def objective_function_embedding(
         all sample embeddings. If 'embedding' is a sample embedding,
         'embeddings_other' are all signature embeddings.
 
-    scaling : float | np.ndarray
+    scaling : float
         The scaling of the signature or sample corresponding to the
         embedding.
-        In correlated NMF, 'scaling' is a float. In multimodal correlated NMF,
-        'scaling' is an array if 'embedding' is a sample embedding because
-        it depends on the modality.
 
     scalings_other : np.ndarray
         shape (n_samples | n_signatures,)
@@ -243,7 +234,7 @@ def objective_function_embedding(
 def gradient_embedding(
     embedding: np.ndarray,
     embeddings_other: np.ndarray,
-    scaling: float | np.ndarray,
+    scaling: float,
     scalings_other: np.ndarray,
     variance: float,
     summand_grad: np.ndarray,
@@ -266,9 +257,6 @@ def gradient_embedding(
     scaling : float
         The scaling of the signature or sample corresponding to the
         embedding.
-        In correlated NMF, 'scaling' is a float. In multimodal correlated NMF,
-        'scaling' is an array if 'embedding' is a sample embedding because
-        it depends on the modality.
 
     scalings_other : np.ndarray
         shape (n_samples | n_signatures,)
@@ -297,7 +285,7 @@ def gradient_embedding(
 def hessian_embedding(
     embedding: np.ndarray,
     embeddings_other: np.ndarray,
-    scaling: float | np.ndarray,
+    scaling: float,
     scalings_other: np.ndarray,
     variance: float,
     outer_prods_embeddings_other: np.ndarray,
@@ -320,9 +308,6 @@ def hessian_embedding(
     scaling : float
         The scaling of the signature or sample corresponding to the
         embedding.
-        In correlated NMF, 'scaling' is a float. In multimodal correlated NMF,
-        'scaling' is an array if 'embedding' is a sample embedding because
-        it depends on the modality.
 
     scalings_other : np.ndarray
         shape (n_samples | n_signatures,)
@@ -354,7 +339,7 @@ def hessian_embedding(
 def update_embedding(
     embedding_init: np.ndarray,
     embeddings_other: np.ndarray,
-    scaling: float | np.ndarray,
+    scaling: float,
     scalings_other: np.ndarray,
     variance: float,
     aux_vec: np.ndarray,

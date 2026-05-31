@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any, Iterable
 
 import anndata as ad
-import mudata as md
 import numpy as np
 import pandas as pd
 from numba import njit
@@ -99,7 +98,7 @@ def value_checker(arg_name: str, arg: Any, allowed_values: Iterable[Any]) -> Non
         )
 
 
-def _get_basis_obsm(adata: ad.AnnData | md.MuData, basis: str) -> np.ndarray:
+def _get_basis_obsm(adata: ad.AnnData, basis: str) -> np.ndarray:
     """
     Get the multidimensional observation annotations named 'basis'.
     Tries to recover 'X_basis' if 'basis' is not a key of adata.obsm.
@@ -112,7 +111,7 @@ def _get_basis_obsm(adata: ad.AnnData | md.MuData, basis: str) -> np.ndarray:
         raise KeyError(f"Could not find '{basis}' or 'X_{basis}' in .obsm")
 
 
-def _get_basis_obsp(adata: ad.AnnData | md.MuData, basis: str) -> np.ndarray:
+def _get_basis_obsp(adata: ad.AnnData, basis: str) -> np.ndarray:
     """
     Get the pairwise observation annotations named 'basis'.
     Tries to recover 'X_basis' if 'basis' is not a key of adata.obsp.
@@ -126,13 +125,13 @@ def _get_basis_obsp(adata: ad.AnnData | md.MuData, basis: str) -> np.ndarray:
 
 
 def _concat_light(
-    adatas: Iterable[ad.AnnData | md.MuData],
+    adatas: Iterable[ad.AnnData],
     obs_keys: Iterable[str] | None = None,
     obsm_keys: Iterable[str] | None = None,
 ) -> ad.AnnData:
     """
-    Concatenate multiple AnnData or MuData objects without copying all
-    the data, but only the relavant 'obs_keys' and 'obsm_keys'.
+    Concatenate multiple AnnData objects without copying all the data, but only
+    the relavant 'obs_keys' and 'obsm_keys'.
     """
     # avoid copying all the data
     n_obs_total = sum(adata.n_obs for adata in adatas)

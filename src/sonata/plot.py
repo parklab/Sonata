@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     from anndata import AnnData
     from matplotlib.colors import Colormap
     from matplotlib.typing import ColorType
-    from mudata import MuData
     from seaborn.matrix import ClusterGrid
 
 
@@ -228,7 +227,7 @@ def scatter_numpy(
 
 
 def scatter(
-    adata: AnnData | MuData,
+    adata: AnnData,
     x: str,
     y: str | None = None,
     ticks: bool = True,
@@ -250,7 +249,7 @@ def scatter(
 
 
 def scatter_multiple(
-    adatas: Iterable[AnnData | MuData],
+    adatas: Iterable[AnnData],
     x: str,
     y: str | None = None,
     ticks: bool = True,
@@ -297,7 +296,7 @@ def _basisobsm2name(basis: str) -> str:
 
 
 def embedding(
-    adata: AnnData | MuData,
+    adata: AnnData,
     basis: str,
     dimensions: tuple[int, int] = (0, 1),
     xlabel: str | None = None,
@@ -336,7 +335,7 @@ def embedding(
 
 
 def embedding_multiple(
-    adatas: Iterable[AnnData | MuData],
+    adatas: Iterable[AnnData],
     basis: str,
     dimensions: tuple[int, int] = (0, 1),
     xlabel: str | None = None,
@@ -367,7 +366,7 @@ def pca(adata: AnnData, **kwargs) -> Axes:
     return embedding(adata, basis="pca", **kwargs)
 
 
-def pca_multiple(adatas: Iterable[AnnData | MuData], **kwargs) -> Axes:
+def pca_multiple(adatas: Iterable[AnnData], **kwargs) -> Axes:
     return embedding_multiple(adatas, basis="pca", **kwargs)
 
 
@@ -375,7 +374,7 @@ def tsne(adata: AnnData, **kwargs) -> Axes:
     return embedding(adata, basis="tsne", **kwargs)
 
 
-def tsne_multiple(adatas: Iterable[AnnData | MuData], **kwargs) -> Axes:
+def tsne_multiple(adatas: Iterable[AnnData], **kwargs) -> Axes:
     return embedding_multiple(adatas, basis="tsne", **kwargs)
 
 
@@ -383,7 +382,7 @@ def umap(adata: AnnData, **kwargs) -> Axes:
     return embedding(adata, basis="umap", **kwargs)
 
 
-def umap_multiple(adatas: Iterable[AnnData | MuData], **kwargs) -> Axes:
+def umap_multiple(adatas: Iterable[AnnData], **kwargs) -> Axes:
     return embedding_multiple(adatas, basis="umap", **kwargs)
 
 

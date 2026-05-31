@@ -797,27 +797,6 @@ python-dateutil = ">=2.7"
 dev = ["meson-python (>=0.13.1,<0.17.0)", "numpy (>=1.25)", "pybind11 (>=2.6,!=2.13.3)", "setuptools (>=64)", "setuptools_scm (>=7)"]
 
 [[package]]
-name = "mudata"
-version = "0.2.4"
-description = "Multimodal omics analysis framework"
-optional = false
-python-versions = ">=3.9"
-files = [
-    {file = "mudata-0.2.4-py3-none-any.whl", hash = "sha256:d4dd670d1470dbdb2a2c9d49df82862ee01e58ed01fa8184d495ce5b01aafef7"},
-    {file = "mudata-0.2.4.tar.gz", hash = "sha256:85a34a43778667f227acf1d924fff38baee40d2e99cb5cd5355a0901ded9154a"},
-]
-
-[package.dependencies]
-anndata = ">=0.10.8"
-h5py = "*"
-numpy = "*"
-pandas = "*"
-
-[package.extras]
-docs = ["nbsphinx", "pydata-sphinx-theme", "readthedocs-sphinx-search", "recommonmark", "sphinx", "sphinx-book-theme", "sphinx_automodapi"]
-test = ["zarr"]
-
-[[package]]
 name = "mypy"
 version = "1.19.1"
 description = "Optional static typing for Python"
@@ -1823,4 +1802,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "8f7bcfaeb8e58698c0626e7f7c395685999be0a3aabf0988dc314345e7d44ffa"
+content-hash = "c268c9857d943d946077c509d0623c79c263ea7d9c3efca505d41b4e994287ce"
