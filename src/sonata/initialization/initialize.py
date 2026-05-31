@@ -32,8 +32,8 @@ EPSILON = np.finfo(np.float32).eps
 GIVEN_PARAMETERS_STANDARD_NMF = ["asignatures"]
 GIVEN_PARAMETERS_CORRNMF = [
     "asignatures",
-    "signature_scalings",
-    "sample_scalings",
+    "signature_offsets",
+    "sample_offsets",
     "signature_embeddings",
     "sample_embeddings",
     "variance",
@@ -254,11 +254,14 @@ def initialize_standard_nmf(
     return asignatures
 
 
-def check_given_scalings_corrnmf(
-    given_scalings: np.ndarray, n_scalings_expected: int, name: str
+def check_given_offsets_corrnmf(
+    given_offsets: np.ndarray, n_offsets_expected: int, name: str
 ) -> None:
-    type_checker(name, given_scalings, np.ndarray)
-    shape_checker(name, given_scalings, (n_scalings_expected,))
+    """
+    Check if the given sample or signature offsets match the expected shape.
+    """
+    type_checker(name, given_offsets, np.ndarray)
+    shape_checker(name, given_offsets, (n_offsets_expected,))
 
 
 def check_given_embeddings_corrnmf(
@@ -284,15 +287,15 @@ def check_given_parameters_corrnmf(
     if "asignatures" in given_parameters:
         check_given_asignatures(given_parameters["asignatures"], adata, n_signatures)
 
-    if "signature_scalings" in given_parameters:
-        check_given_scalings_corrnmf(
-            given_parameters["signature_scalings"],
+    if "signature_offsets" in given_parameters:
+        check_given_offsets_corrnmf(
+            given_parameters["signature_offsets"],
             n_signatures,
-            "given_signature_scalings",
+            "given_signature_offsets",
         )
-    if "sample_scalings" in given_parameters:
-        check_given_scalings_corrnmf(
-            given_parameters["sample_scalings"], adata.n_obs, "given_sample_scalings"
+    if "sample_offsets" in given_parameters:
+        check_given_offsets_corrnmf(
+            given_parameters["sample_offsets"], adata.n_obs, "given_sample_offsets"
         )
     if "signature_embeddings" in given_parameters:
         check_given_embeddings_corrnmf(
@@ -347,15 +350,15 @@ def initialize_corrnmf(
         **kwargs,
     )
 
-    if "signature_scalings" in given_parameters:
-        asignatures.obs["scalings"] = given_parameters["signature_scalings"]
+    if "signature_offsets" in given_parameters:
+        asignatures.obs["offsets"] = given_parameters["signature_offsets"]
     else:
-        asignatures.obs["scalings"] = np.zeros(n_signatures)
+        asignatures.obs["offsets"] = np.zeros(n_signatures)
 
-    if "sample_scalings" in given_parameters:
-        adata.obs["scalings"] = given_parameters["sample_scalings"]
+    if "sample_offsets" in given_parameters:
+        adata.obs["offsets"] = given_parameters["sample_offsets"]
     else:
-        adata.obs["scalings"] = np.zeros(adata.n_obs)
+        adata.obs["offsets"] = np.zeros(adata.n_obs)
 
     if "signature_embeddings" in given_parameters:
         asignatures.obsm["embeddings"] = given_parameters["signature_embeddings"]

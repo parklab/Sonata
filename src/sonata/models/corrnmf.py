@@ -26,7 +26,7 @@ class CorrNMF(SignatureNMF):
     """
     Deterministic batch correlated NMF.
 
-    CorrNMF refactors the exposure matrix into signature and sample scalings
+    CorrNMF refactors the exposure matrix into signature and sample offsets
     plus signature and sample embeddings, which lets the model learn a
     correlation structure between signatures and samples.
 
@@ -73,12 +73,12 @@ class CorrNMF(SignatureNMF):
     def compute_exposures(self) -> None:
         """
         In contrast to the classical NMF framework, the exposure matrix is
-        restructured and determined by the signature & sample biases and
+        restructured and determined by the signature & sample offsets and
         embeddings.
         """
         self.adata.obsm["exposures"] = _utils_corrnmf.compute_exposures(
-            self.asignatures.obs["scalings"].values,
-            self.adata.obs["scalings"].values,
+            self.asignatures.obs["offsets"].values,
+            self.adata.obs["offsets"].values,
             self.asignatures.obsm["embeddings"],
             self.adata.obsm["embeddings"],
         )
@@ -113,14 +113,14 @@ class CorrNMF(SignatureNMF):
         init_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """
-        Initialize the signature matrix, the signature and sample scalings,
+        Initialize the signature matrix, the signature and sample offsets,
         the signature and sample embeddings, and the variance.
 
         Parameters
         ----------
         given_parameters: dict, default=None
             A priori known parameters / parameters to fix during model training.
-            Allowed keys: 'asignatures', 'signature_scalings', 'sample_scalings',
+            Allowed keys: 'asignatures', 'signature_offsets', 'sample_offsets',
             'signature_embeddings', 'sample_embeddings'. The values have to
             have the appropriate shape. If 'asignatures' is not None, it is
             expected to be an AnnData object.
@@ -150,34 +150,37 @@ class CorrNMF(SignatureNMF):
         return
 
     def _compute_aux(self) -> np.ndarray:
+        """
+        Compute the auxiliary matrix used by the CorrNMF parameter updates.
+        """
         return _utils_corrnmf.compute_aux(
             self.adata.X, self.asignatures.X, self.adata.obsm["exposures"]
         )
 
-    def update_sample_scalings(
+    def update_sample_offsets(
         self, given_parameters: dict[str, Any] | None = None
     ) -> None:
         if given_parameters is None:
             given_parameters = {}
 
-        if "sample_scalings" not in given_parameters:
-            self.adata.obs["scalings"] = _utils_corrnmf.update_sample_scalings(
+        if "sample_offsets" not in given_parameters:
+            self.adata.obs["offsets"] = _utils_corrnmf.update_sample_offsets(
                 self.adata.X,
-                self.asignatures.obs["scalings"].values,
+                self.asignatures.obs["offsets"].values,
                 self.asignatures.obsm["embeddings"],
                 self.adata.obsm["embeddings"],
             )
 
-    def update_signature_scalings(
+    def update_signature_offsets(
         self, aux: np.ndarray, given_parameters: dict[str, Any] | None = None
     ) -> None:
         if given_parameters is None:
             given_parameters = {}
 
-        if "signature_scalings" not in given_parameters:
-            self.asignatures.obs["scalings"] = _utils_corrnmf.update_signature_scalings(
+        if "signature_offsets" not in given_parameters:
+            self.asignatures.obs["offsets"] = _utils_corrnmf.update_signature_offsets(
                 aux,
-                self.adata.obs["scalings"].values,
+                self.adata.obs["offsets"].values,
                 self.asignatures.obsm["embeddings"],
                 self.adata.obsm["embeddings"],
             )
@@ -230,8 +233,8 @@ class CorrNMF(SignatureNMF):
             self.asignatures.obsm["embeddings"][k, :] = _utils_corrnmf.update_embedding(
                 embedding_init,
                 self.adata.obsm["embeddings"],
-                self.asignatures.obs["scalings"][k],
-                self.adata.obs["scalings"].values,
+                self.asignatures.obs["offsets"][k],
+                self.adata.obs["offsets"].values,
                 self.variance,
                 aux_row,
                 outer_prods_sample_embeddings,
@@ -257,8 +260,8 @@ class CorrNMF(SignatureNMF):
             self.adata.obsm["embeddings"][d, :] = _utils_corrnmf.update_embedding(
                 embedding_init,
                 self.asignatures.obsm["embeddings"],
-                self.adata.obs["scalings"][d],
-                self.asignatures.obs["scalings"].values,
+                self.adata.obs["offsets"][d],
+                self.asignatures.obs["offsets"].values,
                 self.variance,
                 aux_col,
                 outer_prods_signature_embeddings,
@@ -285,10 +288,10 @@ class CorrNMF(SignatureNMF):
         if given_parameters is None:
             given_parameters = {}
 
-        self.update_sample_scalings(given_parameters)
+        self.update_sample_offsets(given_parameters)
         self.compute_exposures()
         aux = self._compute_aux()
-        self.update_signature_scalings(aux, given_parameters)
+        self.update_signature_offsets(aux, given_parameters)
         self.update_embeddings(aux, given_parameters)
         self.update_variance(given_parameters)
         self.update_signatures(given_parameters)

@@ -10,8 +10,8 @@ from ._utils_klnmf import poisson_llh
 
 @njit
 def compute_exposures(
-    signature_scalings: np.ndarray,
-    sample_scalings: np.ndarray,
+    signature_offsets: np.ndarray,
+    sample_offsets: np.ndarray,
     signature_embeddings: np.ndarray,
     sample_embeddings: np.ndarray,
 ) -> np.ndarray:
@@ -19,8 +19,8 @@ def compute_exposures(
     Get the exposure matrix of shape (n_samples, n_signatures).
     """
     return np.exp(
-        signature_scalings[:, np.newaxis]
-        + sample_scalings
+        signature_offsets[:, np.newaxis]
+        + sample_offsets
         + signature_embeddings @ sample_embeddings.T
     ).T
 
@@ -95,14 +95,14 @@ def elbo_corrnmf(
 
 
 @njit
-def update_signature_scalings(
+def update_signature_offsets(
     aux: np.ndarray,
-    sample_scalings: np.ndarray,
+    sample_offsets: np.ndarray,
     signature_embeddings: np.ndarray,
     sample_embeddings: np.ndarray,
 ) -> np.ndarray:
     r"""
-    Compute the new signature scalings according to the update rule of CorrNMF.
+    Compute the new signature offsets according to the update rule of CorrNMF.
 
     Inputs
     ------
@@ -110,7 +110,7 @@ def update_signature_scalings(
         auxiliary parameters of shape (n_signatures, n_samples) with
         aux[k,d] = \sum_v x_vd p_vkd
 
-    sample_scalings : np.ndarray
+    sample_offsets : np.ndarray
         shape (n_samples,)
 
     signature_embeddings : np.ndarray
@@ -121,33 +121,33 @@ def update_signature_scalings(
 
     Returns
     -------
-    signature_scalings : np.ndarray
+    signature_offsets : np.ndarray
         shape (n_signatures,)
     """
     first_sum = np.sum(aux, axis=1)
     second_sum = np.sum(
-        np.exp(sample_scalings + signature_embeddings @ sample_embeddings.T), axis=1
+        np.exp(sample_offsets + signature_embeddings @ sample_embeddings.T), axis=1
     )
-    signature_scalings = np.log(first_sum) - np.log(second_sum)
-    return signature_scalings
+    signature_offsets = np.log(first_sum) - np.log(second_sum)
+    return signature_offsets
 
 
 @njit
-def update_sample_scalings(
+def update_sample_offsets(
     data_mat: np.ndarray,
-    signature_scalings: np.ndarray,
+    signature_offsets: np.ndarray,
     signature_embeddings: np.ndarray,
     sample_embeddings: np.ndarray,
 ) -> np.ndarray:
     """
-    Compute the new sample scalings according to the update rule of CorrNMF.
+    Compute the new sample offsets according to the update rule of CorrNMF.
 
     Parameters
     ----------
     data_mat : np.ndarray
         shape (n_features, n_samples)
 
-    signature_scalings : np.ndarray
+    signature_offsets : np.ndarray
         shape (n_signatures,)
 
     signature_embeddings : np.ndarray
@@ -158,27 +158,27 @@ def update_sample_scalings(
 
     Returns
     -------
-    sample_scalings : np.ndarray
+    sample_offsets : np.ndarray
         shape (n_samples,)
     """
     first_sum = np.sum(data_mat, axis=1)
     second_sum = np.sum(
         np.exp(
-            signature_scalings[:, np.newaxis]
+            signature_offsets[:, np.newaxis]
             + signature_embeddings @ sample_embeddings.T
         ),
         axis=0,
     )
-    sample_scalings = np.log(first_sum) - np.log(second_sum)
-    return sample_scalings
+    sample_offsets = np.log(first_sum) - np.log(second_sum)
+    return sample_offsets
 
 
 @njit
 def objective_function_embedding(
     embedding: np.ndarray,
     embeddings_other: np.ndarray,
-    scaling: float,
-    scalings_other: np.ndarray,
+    offset: float,
+    offsets_other: np.ndarray,
     variance: float,
     aux_vector: np.ndarray,
 ) -> float:
@@ -196,16 +196,16 @@ def objective_function_embedding(
         all sample embeddings. If 'embedding' is a sample embedding,
         'embeddings_other' are all signature embeddings.
 
-    scaling : float
-        The scaling of the signature or sample corresponding to the
+    offset : float
+        The offset of the signature or sample corresponding to the
         embedding.
 
-    scalings_other : np.ndarray
+    offsets_other : np.ndarray
         shape (n_samples | n_signatures,)
-        The scalings of all samples or all signatures.
-        If 'embedding' is a signature embeddings, 'scalings_other'
-        are all sample scalingss. If 'embedding' is a sample embedding,
-        'scalings_other' are all sample scalings.
+        The offsets of all samples or all signatures.
+        If 'embedding' is a signature embedding, 'offsets_other'
+        are all sample offsets. If 'embedding' is a sample embedding,
+        'offsets_other' are all signature offsets.
 
     variance : float
 
@@ -225,7 +225,7 @@ def objective_function_embedding(
     for i in range(n_embeddings_other):
         of_value += scalar_products[i] * aux_vector[i]
 
-    of_value -= np.sum(np.exp(scaling + scalings_other + scalar_products))
+    of_value -= np.sum(np.exp(offset + offsets_other + scalar_products))
     of_value -= np.dot(embedding, embedding) / (2 * variance)
     return -of_value
 
@@ -234,8 +234,8 @@ def objective_function_embedding(
 def gradient_embedding(
     embedding: np.ndarray,
     embeddings_other: np.ndarray,
-    scaling: float,
-    scalings_other: np.ndarray,
+    offset: float,
+    offsets_other: np.ndarray,
     variance: float,
     summand_grad: np.ndarray,
 ) -> np.ndarray:
@@ -254,16 +254,16 @@ def gradient_embedding(
         all sample embeddings. If 'embedding' is a sample embedding,
         'embeddings_other' are all signature embeddings.
 
-    scaling : float
-        The scaling of the signature or sample corresponding to the
+    offset : float
+        The offset of the signature or sample corresponding to the
         embedding.
 
-    scalings_other : np.ndarray
+    offsets_other : np.ndarray
         shape (n_samples | n_signatures,)
-        The scalings of all samples or all signatures.
-        If 'embedding' is a signature embeddings, 'scalings_other'
-        are all sample scalingss. If 'embedding' is a sample embedding,
-        'scalings_other' are all sample scalings.
+        The offsets of all samples or all signatures.
+        If 'embedding' is a signature embedding, 'offsets_other'
+        are all sample offsets. If 'embedding' is a sample embedding,
+        'offsets_other' are all signature offsets.
 
     variance : float
 
@@ -272,7 +272,7 @@ def gradient_embedding(
     """
     scalar_products = embeddings_other.dot(embedding)
     gradient = -np.sum(
-        np.exp(scaling + scalings_other + scalar_products)[:, np.newaxis]
+        np.exp(offset + offsets_other + scalar_products)[:, np.newaxis]
         * embeddings_other,
         axis=0,
     )
@@ -285,8 +285,8 @@ def gradient_embedding(
 def hessian_embedding(
     embedding: np.ndarray,
     embeddings_other: np.ndarray,
-    scaling: float,
-    scalings_other: np.ndarray,
+    offset: float,
+    offsets_other: np.ndarray,
     variance: float,
     outer_prods_embeddings_other: np.ndarray,
 ) -> np.ndarray:
@@ -305,16 +305,16 @@ def hessian_embedding(
         all sample embeddings. If 'embedding' is a sample embedding,
         'embeddings_other' are all signature embeddings.
 
-    scaling : float
-        The scaling of the signature or sample corresponding to the
+    offset : float
+        The offset of the signature or sample corresponding to the
         embedding.
 
-    scalings_other : np.ndarray
+    offsets_other : np.ndarray
         shape (n_samples | n_signatures,)
-        The scalings of all samples or all signatures.
-        If 'embedding' is a signature embeddings, 'scalings_other'
-        are all sample scalingss. If 'embedding' is a sample embedding,
-        'scalings_other' are all sample scalings.
+        The offsets of all samples or all signatures.
+        If 'embedding' is a signature embedding, 'offsets_other'
+        are all sample offsets. If 'embedding' is a sample embedding,
+        'offsets_other' are all signature offsets.
 
     variance : float
 
@@ -323,13 +323,13 @@ def hessian_embedding(
     """
     n_embeddings_other, dim_embeddings = embeddings_other.shape
     scalar_products = embeddings_other.dot(embedding)
-    scalings = np.exp(scaling + scalings_other + scalar_products)
+    offsets = np.exp(offset + offsets_other + scalar_products)
     hessian = np.zeros((dim_embeddings, dim_embeddings))
 
     for m1 in range(dim_embeddings):
         for m2 in range(dim_embeddings):
             for i in range(n_embeddings_other):
-                hessian[m1, m2] -= scalings[i] * outer_prods_embeddings_other[i, m1, m2]
+                hessian[m1, m2] -= offsets[i] * outer_prods_embeddings_other[i, m1, m2]
             if m1 == m2:
                 hessian[m1, m2] -= 1 / variance
 
@@ -339,23 +339,23 @@ def hessian_embedding(
 def update_embedding(
     embedding_init: np.ndarray,
     embeddings_other: np.ndarray,
-    scaling: float,
-    scalings_other: np.ndarray,
+    offset: float,
+    offsets_other: np.ndarray,
     variance: float,
     aux_vec: np.ndarray,
     outer_prods_embeddings_other: np.ndarray,
     **kwargs,
 ) -> np.ndarray:
     """
-    Optimize a signature or sample embedding using scipy.
+    Optimize a signature or sample embedding using scipy.optimize.
     """
 
     def objective_fun(embedding):
         return objective_function_embedding(
             embedding,
             embeddings_other,
-            scaling,
-            scalings_other,
+            offset,
+            offsets_other,
             variance,
             aux_vec,
         )
@@ -366,8 +366,8 @@ def update_embedding(
         return gradient_embedding(
             embedding,
             embeddings_other,
-            scaling,
-            scalings_other,
+            offset,
+            offsets_other,
             variance,
             summand_grad,
         )
@@ -376,8 +376,8 @@ def update_embedding(
         return hessian_embedding(
             embedding,
             embeddings_other,
-            scaling,
-            scalings_other,
+            offset,
+            offsets_other,
             variance,
             outer_prods_embeddings_other,
         )
