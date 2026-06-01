@@ -4,7 +4,7 @@
 [![License][license-image]][license-url]
 [![Code style][style-image]][style-url]
 
-[python-image]: https://img.shields.io/badge/python-3.9%20|%203.10%20|%203.11-blue.svg
+[python-image]: https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13-blue.svg
 [python-url]: https://github.com/parklab/Sonata
 [license-image]: https://img.shields.io/badge/License-MIT-yellow.svg
 [license-url]: https://github.com/parklab/Sonata/blob/main/LICENSE
