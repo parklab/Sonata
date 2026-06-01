@@ -8,7 +8,7 @@ from numba import njit
 from ..initialization.initialize import EPSILON
 from ..utils import normalize_WH
 from ._utils_klnmf import kl_divergence, samplewise_kl_divergence, update_H
-from .standard_nmf import StandardNMF
+from .signature_nmf import SignatureNMF
 
 if TYPE_CHECKING:
     from ..initialization.methods import _Init_methods
@@ -92,7 +92,7 @@ def line_search(
     return W_new, H_new, gamma
 
 
-class MvNMF(StandardNMF):
+class MvNMF(SignatureNMF):
     """
     Min-volume non-negative matrix factorization. This algorithms is a volume-
     regularized version of NMF with the generalized Kullback-Leibler (KL)

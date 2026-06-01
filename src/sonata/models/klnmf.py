@@ -6,7 +6,7 @@ import numpy as np
 
 from ..utils import shape_checker, type_checker
 from . import _utils_klnmf
-from .standard_nmf import StandardNMF
+from .signature_nmf import SignatureNMF
 
 if TYPE_CHECKING:
     from ..initialization.methods import _Init_methods
@@ -15,7 +15,7 @@ _FITTING_KWARGS = ["weights_kl", "weights_lhalf"]
 _DEFAULT_FITTING_KWARGS = {kwarg: None for kwarg in _FITTING_KWARGS}
 
 
-class KLNMF(StandardNMF):
+class KLNMF(SignatureNMF):
     """
     Decompose a mutation count matrix X into the product of a signature
     matrix W and an exposure matrix H by minimizing the weighted
