@@ -1,25 +1,16 @@
 from __future__ import annotations
 
-import warnings
-from typing import TYPE_CHECKING, Any, Iterable, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
-import matplotlib.pyplot as plt
 import numpy as np
-from scipy.spatial.distance import squareform
 
-from .. import plot as pl
-from .. import tools as tl
 from ..initialization.initialize import EPSILON, initialize_corrnmf
-from ..utils import value_checker
 from . import _utils_corrnmf
 from ._utils_klnmf import samplewise_kl_divergence, update_W
 from .signature_nmf import SignatureNMF
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
-
     from ..initialization.methods import _Init_methods
-    from .signature_nmf import _Dim_reduction_methods
 
 
 class CorrNMF(SignatureNMF):
@@ -295,94 +286,3 @@ class CorrNMF(SignatureNMF):
         self.update_embeddings(aux, given_parameters)
         self.update_variance(given_parameters)
         self.update_signatures(given_parameters)
-
-    def compute_correlation_scaled(
-        self, data: Literal["samples", "signatures"] = "signatures"
-    ) -> None:
-        """
-        Compute the signature or sample correlation based on the
-        scaled exposures and store it in the respective anndata object.
-        """
-        value_checker("data", data, ["samples", "signatures"])
-        assert "embeddings" in self.adata.obsm, (
-            "Computing the sample or signature correlation "
-            "requires fitting the CorrNMF model."
-        )
-
-        if data == "samples":
-            vectors = self.adata.obsm["embeddings"]
-        else:
-            vectors = self.asignatures.obsm["embeddings"]
-
-        norms = np.sqrt(np.sum(vectors**2, axis=1))
-        n_vectors = len(norms)
-        corr_vector = np.array(
-            [
-                np.dot(v1, v2) / (norms[i1] * norms[i1 + i2 + 1])
-                for i1, v1 in enumerate(vectors)
-                for i2, v2 in enumerate(vectors[(i1 + 1) :, :])
-            ]
-        )
-        correlation = squareform(corr_vector) + np.identity(n_vectors)
-
-        if data == "samples":
-            self.adata.obsp["X_correlation"] = correlation
-        else:
-            self.asignatures.obsp["correlation"] = correlation
-
-    def plot_embeddings(
-        self,
-        method: _Dim_reduction_methods = "umap",
-        n_components: int = 2,
-        dimensions: tuple[int, int] = (0, 1),
-        color: str | None = None,
-        zorder: str | None = None,
-        annotations: Iterable[str] | None = None,
-        outfile: str | None = None,
-        **kwargs,
-    ) -> Axes:
-        adatas = [self.asignatures, self.adata]
-        tl.reduce_dimension_multiple(
-            adatas=adatas,
-            basis="embeddings",
-            method=method,
-            n_components=n_components,
-            **kwargs,
-        )
-        if self.dim_embeddings <= 2:
-            warnings.warn(
-                f"The embedding dimension is {self.dim_embeddings}. "
-                "The embeddings are plotted without an additional "
-                "dimensionality reduction.",
-                UserWarning,
-            )
-            basis = "embeddings"
-        else:
-            basis = method
-
-        if color is None:
-            color = "color_embeddings"
-            self.asignatures.obs[color] = self.n_signatures * ["black"]
-            self.adata.obs[color] = self.adata.n_obs * ["#1f77b4"]  # default blue
-
-        if zorder is None:
-            zorder = "zorder_embeddings"
-            self.asignatures.obs[zorder] = self.n_signatures * [2]
-            self.adata.obs[zorder] = self.adata.n_obs * [1]
-
-        if annotations is None:
-            annotations = self.signature_names
-
-        ax = pl.embedding_multiple(
-            adatas=adatas,
-            basis=basis,
-            dimensions=dimensions,
-            color=color,
-            zorder=zorder,
-            annotations=annotations,
-            **kwargs,
-        )
-        if outfile is not None:
-            plt.savefig(outfile, bbox_inches="tight")
-
-        return ax
