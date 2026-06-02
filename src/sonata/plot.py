@@ -13,7 +13,13 @@ from matplotlib.axes import Axes
 from scipy.cluster import hierarchy
 from scipy.spatial.distance import pdist
 
-from .consts import COLORS_INDEL83, COLORS_SBS96, INDEL_TYPES_83, SBS_TYPES_96
+from .consts import (
+    COLORS_INDEL83,
+    COLORS_SBS96,
+    DIVERGING_PALETTE,
+    INDEL_TYPES_83,
+    SBS_TYPES_96,
+)
 from .utils import _concat_light, _get_basis_obsm, _get_basis_obsp, match_to_catalog
 
 if TYPE_CHECKING:
@@ -389,7 +395,7 @@ def umap_multiple(adatas: Iterable[AnnData], **kwargs) -> Axes:
 def correlation_pandas(
     corr: pd.DataFrame,
     figsize: tuple[float, float] = (4.0, 4.0),
-    cmap: Colormap | str | None = "vlag",
+    cmap: Colormap | str | None = DIVERGING_PALETTE,
     fmt: str = ".2f",
     **kwargs,
 ) -> ClusterGrid:
@@ -807,7 +813,7 @@ def stacked_barplot(
         _, ax = plt.subplots(figsize=(0.3 * n_obs, 4))
 
     if colors is None:
-        colors = sns.color_palette("deep") * (1 + n_dimensions // 10)
+        colors = sns.color_palette("Set3") * (1 + n_dimensions // 12)
 
     bottom = np.zeros(n_obs)
 

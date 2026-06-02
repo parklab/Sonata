@@ -224,7 +224,7 @@ class Cornet(SignatureNMF):
             self.asignatures.obsm["embeddings"][k, :] = _utils_cornet.update_embedding(
                 embedding_init,
                 self.adata.obsm["embeddings"],
-                self.asignatures.obs["offsets"][k],
+                self.asignatures.obs["offsets"].iloc[k],
                 self.adata.obs["offsets"].values,
                 self.variance,
                 aux_row,
@@ -251,7 +251,7 @@ class Cornet(SignatureNMF):
             self.adata.obsm["embeddings"][d, :] = _utils_cornet.update_embedding(
                 embedding_init,
                 self.asignatures.obsm["embeddings"],
-                self.adata.obs["offsets"][d],
+                self.adata.obs["offsets"].iloc[d],
                 self.asignatures.obs["offsets"].values,
                 self.variance,
                 aux_col,
