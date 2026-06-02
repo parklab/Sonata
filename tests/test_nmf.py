@@ -1,5 +1,3 @@
-import pickle
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -62,11 +60,10 @@ def test_objective_function(model_init, objective_init):
 class TestUpdatesNMF:
     @pytest.fixture
     def WH_updated(self, n_signatures):
-        with open(
-            f"{PATH_TEST_DATA}/WH_updated_joint_nsigs{n_signatures}.pkl", "rb"
-        ) as f:
-            WH_updated = pickle.load(f)
-        return WH_updated
+        suffix = f"_updated_joint_nsigs{n_signatures}.npy"
+        path_W = f"{PATH_TEST_DATA}/W{suffix}"
+        path_H = f"{PATH_TEST_DATA}/H{suffix}"
+        return np.load(path_W), np.load(path_H)
 
     def test_update_parameters(self, model_init, WH_updated):
         model_init._update_parameters()
