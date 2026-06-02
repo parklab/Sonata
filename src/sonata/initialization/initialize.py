@@ -30,7 +30,7 @@ EPSILON = np.finfo(np.float32).eps
 
 # allowed given parameters
 GIVEN_PARAMETERS_STANDARD_NMF = ["asignatures"]
-GIVEN_PARAMETERS_CORRNMF = [
+GIVEN_PARAMETERS_CORNET = [
     "asignatures",
     "signature_offsets",
     "sample_offsets",
@@ -254,7 +254,7 @@ def initialize_standard_nmf(
     return asignatures
 
 
-def check_given_offsets_corrnmf(
+def check_given_offsets_cornet(
     given_offsets: np.ndarray, n_offsets_expected: int, name: str
 ) -> None:
     """
@@ -264,7 +264,7 @@ def check_given_offsets_corrnmf(
     shape_checker(name, given_offsets, (n_offsets_expected,))
 
 
-def check_given_embeddings_corrnmf(
+def check_given_embeddings_cornet(
     given_embeddings: np.ndarray,
     n_embeddings_expected: int,
     dim_embeddings_expected: int,
@@ -276,36 +276,36 @@ def check_given_embeddings_corrnmf(
     )
 
 
-def check_given_parameters_corrnmf(
+def check_given_parameters_cornet(
     adata: ad.AnnData,
     n_signatures: int,
     dim_embeddings: int,
     given_parameters: dict[str, Any],
 ) -> None:
-    dict_checker("given_parameters", given_parameters, GIVEN_PARAMETERS_CORRNMF)
+    dict_checker("given_parameters", given_parameters, GIVEN_PARAMETERS_CORNET)
 
     if "asignatures" in given_parameters:
         check_given_asignatures(given_parameters["asignatures"], adata, n_signatures)
 
     if "signature_offsets" in given_parameters:
-        check_given_offsets_corrnmf(
+        check_given_offsets_cornet(
             given_parameters["signature_offsets"],
             n_signatures,
             "given_signature_offsets",
         )
     if "sample_offsets" in given_parameters:
-        check_given_offsets_corrnmf(
+        check_given_offsets_cornet(
             given_parameters["sample_offsets"], adata.n_obs, "given_sample_offsets"
         )
     if "signature_embeddings" in given_parameters:
-        check_given_embeddings_corrnmf(
+        check_given_embeddings_cornet(
             given_parameters["signature_embeddings"],
             n_signatures,
             dim_embeddings,
             "given_signature_embeddings",
         )
     if "sample_embeddings" in given_parameters:
-        check_given_embeddings_corrnmf(
+        check_given_embeddings_cornet(
             given_parameters["sample_embeddings"],
             adata.n_obs,
             dim_embeddings,
@@ -318,7 +318,7 @@ def check_given_parameters_corrnmf(
             raise ValueError("The variance has to be a positive real number.")
 
 
-def initialize_corrnmf(
+def initialize_cornet(
     adata: ad.AnnData,
     n_signatures: int,
     dim_embeddings: int,
@@ -333,9 +333,7 @@ def initialize_corrnmf(
         )
 
     given_parameters = {} if given_parameters is None else given_parameters.copy()
-    check_given_parameters_corrnmf(
-        adata, n_signatures, dim_embeddings, given_parameters
-    )
+    check_given_parameters_cornet(adata, n_signatures, dim_embeddings, given_parameters)
 
     if "asignatures" in given_parameters:
         given_asignatures = given_parameters["asignatures"]

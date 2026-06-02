@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from sonata.models import _utils_klnmf
+from sonata.models import _utils_nmf
 
 PATH = "tests/test_data"
-PATH_TEST_DATA = f"{PATH}/models/utils_klnmf"
+PATH_TEST_DATA = f"{PATH}/models/utils_nmf"
 
 
 @pytest.fixture
@@ -46,14 +46,12 @@ def kl_divergence_output(n_signatures):
 
 
 def test_kl_divergence(matrices_input, kl_divergence_output):
-    assert np.allclose(
-        _utils_klnmf.kl_divergence(*matrices_input), kl_divergence_output
-    )
+    assert np.allclose(_utils_nmf.kl_divergence(*matrices_input), kl_divergence_output)
 
 
 def test_kl_divergence_weights(matrices_input, weights_kl, kl_divergence_output):
     assert np.allclose(
-        _utils_klnmf.kl_divergence(*matrices_input, weights_kl),
+        _utils_nmf.kl_divergence(*matrices_input, weights_kl),
         2 * kl_divergence_output,
     )
 
@@ -66,7 +64,7 @@ def samplewise_kl_divergence_output(n_signatures):
 
 def test_samplewise_kl_divergence(matrices_input, samplewise_kl_divergence_output):
     assert np.allclose(
-        _utils_klnmf.samplewise_kl_divergence(*matrices_input),
+        _utils_nmf.samplewise_kl_divergence(*matrices_input),
         samplewise_kl_divergence_output,
     )
 
@@ -75,7 +73,7 @@ def test_samplewise_kl_divergence_weights(
     matrices_input, weights_kl, samplewise_kl_divergence_output
 ):
     weights_kl[0] = 3
-    samplewise_kl_divergence = _utils_klnmf.samplewise_kl_divergence(
+    samplewise_kl_divergence = _utils_nmf.samplewise_kl_divergence(
         *matrices_input, weights_kl
     )
     assert np.allclose(
@@ -94,7 +92,7 @@ def poisson_llh_output(n_signatures):
 
 
 def test_poisson_llh(matrices_input, poisson_llh_output):
-    assert np.allclose(_utils_klnmf.poisson_llh(*matrices_input), poisson_llh_output)
+    assert np.allclose(_utils_nmf.poisson_llh(*matrices_input), poisson_llh_output)
 
 
 @pytest.fixture
@@ -104,13 +102,13 @@ def W_updated(n_signatures):
 
 
 def test_update_W(matrices_input, W_updated):
-    W_updated_utils = _utils_klnmf.update_W(*matrices_input)
+    W_updated_utils = _utils_nmf.update_W(*matrices_input)
     assert np.allclose(W_updated_utils, W_updated)
 
 
 def test_update_W_weights_kl(matrices_input, weights_kl, W_updated):
     # constant loss function weights do not change the updated signatures
-    W_updated_utils = _utils_klnmf.update_W(*matrices_input, weights_kl)
+    W_updated_utils = _utils_nmf.update_W(*matrices_input, weights_kl)
     assert np.allclose(W_updated_utils, W_updated)
 
 
@@ -119,7 +117,7 @@ def test_given_signatures_update_W(matrices_input):
     n_signatures = W.shape[1]
 
     for n_given_signatures in range(1, n_signatures + 1):
-        W_updated = _utils_klnmf.update_W(
+        W_updated = _utils_nmf.update_W(
             X, W.copy(), H, n_given_signatures=n_given_signatures
         )
         assert np.array_equal(
@@ -134,14 +132,14 @@ def H_updated(n_signatures):
 
 
 def test_update_H(matrices_input, H_updated):
-    H_updated_utils = _utils_klnmf.update_H(*matrices_input)
+    H_updated_utils = _utils_nmf.update_H(*matrices_input)
     assert np.allclose(H_updated_utils, H_updated)
 
 
 def test_update_H_weights_l_half(matrices_input, weights_kl, weights_l_half, H_updated):
     # no l_half penalty -> identical exposure updates,
     # independent of the loss function weights
-    H_updated_utils = _utils_klnmf.update_H(*matrices_input, weights_kl, weights_l_half)
+    H_updated_utils = _utils_nmf.update_H(*matrices_input, weights_kl, weights_l_half)
     assert np.allclose(H_updated_utils, H_updated)
 
 
@@ -155,7 +153,7 @@ def WH_updated(n_signatures):
 
 def test_update_WH(matrices_input, WH_updated):
     W_updated, H_updated = WH_updated
-    W_updated_utils, H_updated_utils = _utils_klnmf.update_WH(*matrices_input)
+    W_updated_utils, H_updated_utils = _utils_nmf.update_WH(*matrices_input)
     assert np.allclose(W_updated_utils, W_updated)
     assert np.allclose(H_updated_utils, H_updated)
 
@@ -163,9 +161,7 @@ def test_update_WH(matrices_input, WH_updated):
 def test_update_WH_weights_kl(matrices_input, WH_updated, weights_kl):
     # constant loss function weights do not change the updated matrices
     W_updated, H_updated = WH_updated
-    W_updated_utils, H_updated_utils = _utils_klnmf.update_WH(
-        *matrices_input, weights_kl
-    )
+    W_updated_utils, H_updated_utils = _utils_nmf.update_WH(*matrices_input, weights_kl)
     assert np.allclose(W_updated_utils, W_updated)
     assert np.allclose(H_updated_utils, H_updated)
 
@@ -176,7 +172,7 @@ def test_update_WH_weights_l_half(
     # no l_half penalty -> identical exposure updates,
     # independent of the loss function weights
     W_updated, H_updated = WH_updated
-    W_updated_utils, H_updated_utils = _utils_klnmf.update_WH(
+    W_updated_utils, H_updated_utils = _utils_nmf.update_WH(
         *matrices_input, weights_kl, weights_l_half
     )
     assert np.allclose(W_updated_utils, W_updated)
@@ -188,7 +184,7 @@ def test_given_signatures_update_WH(matrices_input):
     n_signatures = W.shape[1]
 
     for n_given_signatures in range(1, n_signatures + 1):
-        W_updated, _ = _utils_klnmf.update_WH(
+        W_updated, _ = _utils_nmf.update_WH(
             X, W.copy(), H, n_given_signatures=n_given_signatures
         )
         assert np.array_equal(

@@ -1,6 +1,6 @@
 # Sonata Tutorial
 
-This tutorial walks through the main Sonata workflow for mutational signature analysis: loading count data, fitting KL-NMF, visualizing signatures and exposures, fixing known signatures, and fitting CorrNMF.
+This tutorial walks through the main Sonata workflow for mutational signature analysis: loading count data, fitting NMF, visualizing signatures and exposures, fixing known signatures, and fitting Cornet.
 
 The runnable notebook version is available at [tutorial.ipynb](tutorial.ipynb). It contains the same analysis and can be used to regenerate the PNG figures in `docs/images/`.
 
@@ -45,12 +45,12 @@ catalog_sbs = pd.read_csv(
 catalog_sbs.head()
 ```
 
-## 2. Fit KL-NMF
+## 2. Fit NMF
 
-Fit KL-NMF with six signatures and keep the objective history so convergence can be inspected.
+Fit NMF with six signatures and keep the objective history so convergence can be inspected.
 
 ```python
-model = so.models.KLNMF(n_signatures=6, init_method="random")
+model = so.models.NMF(n_signatures=6, init_method="random")
 model.fit(
     adata.copy(),
     init_kwargs={"seed": 42},
@@ -87,7 +87,7 @@ ax = so.pl.history(
 )
 ```
 
-![KL-NMF objective history](images/klnmf-history.png)
+![NMF objective history](images/nmf-history.png)
 
 Plot the learned signatures as mutational profiles.
 
@@ -95,7 +95,7 @@ Plot the learned signatures as mutational profiles.
 axes = so.pl.barplot(model.asignatures)
 ```
 
-![KL-NMF signatures](images/klnmf-signatures.png)
+![NMF signatures](images/nmf-signatures.png)
 
 Plot sample exposures as a stacked bar chart.
 
@@ -105,12 +105,12 @@ ax = so.pl.stacked_barplot(
     model.exposures,
     reorder_dimensions=True,
     annotate_obs=False,
-    title="KL-NMF signature exposures",
+    title="NMF signature exposures",
     ax=ax,
 )
 ```
 
-![KL-NMF exposures](images/klnmf-exposures.png)
+![NMF exposures](images/nmf-exposures.png)
 
 Reduce the dimensionality of the exposures with UMAP and plot the result.
 
@@ -132,7 +132,7 @@ ax = so.pl.embedding(
 )
 ```
 
-![UMAP of KL-NMF exposures](images/klnmf-exposure-umap.png)
+![UMAP of NMF exposures](images/nmf-exposure-umap.png)
 
 Scatter plots can also be customized by storing colors in the `AnnData` object and passing annotation labels explicitly. By default, Sonata adjusts annotations to reduce overlap.
 
@@ -156,7 +156,7 @@ ax = so.pl.embedding(
 )
 ```
 
-![Customized KL-NMF embedding](images/klnmf-custom-embedding.png)
+![Customized NMF embedding](images/nmf-custom-embedding.png)
 
 ### 3.2 Additional Visualization Functionality
 
@@ -166,16 +166,16 @@ Plot a sample-level annotation against the HRDetect score.
 ax = so.pl.scatter(model.adata, x="hrd_label", y="hrdetect_score")
 ```
 
-![HRD label and HRDetect score](images/klnmf-hrd-scatter.png)
+![HRD label and HRDetect score](images/nmf-hrd-scatter.png)
 
-Compute and plot correlations between samples based on their KL-NMF exposures.
+Compute and plot correlations between samples based on their NMF exposures.
 
 ```python
 so.tl.correlation(model.adata, basis="exposures")
 grid = so.pl.correlation(model.adata, figsize=(5, 5))
 ```
 
-![Sample correlation based on KL-NMF exposures](images/klnmf-sample-correlation.png)
+![Sample correlation based on NMF exposures](images/nmf-sample-correlation.png)
 
 The same correlation plotting function can be used for learned signatures.
 
@@ -188,7 +188,7 @@ grid = so.pl.correlation(
 )
 ```
 
-![Correlation between KL-NMF signatures](images/klnmf-signature-correlation.png)
+![Correlation between NMF signatures](images/nmf-signature-correlation.png)
 
 ## 4. Fixing Known Signatures
 
@@ -197,7 +197,7 @@ Known signatures can be fixed during fitting by passing them through `given_para
 ```python
 given_asignatures = ad.AnnData(catalog_sbs.loc[["SBS1", "SBS2"]])
 
-model_fixed = so.models.KLNMF(n_signatures=4)
+model_fixed = so.models.NMF(n_signatures=4)
 model_fixed.fit(
     adata.copy(),
     given_parameters={"asignatures": given_asignatures},
@@ -212,11 +212,11 @@ Plot the fitted signatures after fixing the known COSMIC signatures.
 axes = so.pl.barplot(model_fixed.asignatures)
 ```
 
-![KL-NMF signatures with fixed known signatures](images/klnmf-fixed-signatures.png)
+![NMF signatures with fixed known signatures](images/nmf-fixed-signatures.png)
 
-## 5. CorrNMF
+## 5. Cornet
 
-CorrNMF models exposures through sample offsets, signature offsets, and joint sample/signature embeddings.
+Cornet models exposures through sample offsets, signature offsets, and joint sample/signature embeddings.
 
 ```python
 bdata = adata.copy()
@@ -224,46 +224,46 @@ bdata.X = adata.X / adata.X.sum(axis=1, keepdims=True) * 960
 ```
 
 ```python
-corr_model = so.models.CorrNMF(
+cornet_model = so.models.Cornet(
     n_signatures=6,
     init_method="random",
     max_iterations=3000
 )
-corr_model.fit(
+cornet_model.fit(
     bdata,
     init_kwargs={"seed": 42},
     verbose=True,
 )
 ```
 
-Plot the CorrNMF signatures.
+Plot the Cornet signatures.
 
 ```python
-axes = so.pl.barplot(corr_model.asignatures)
+axes = so.pl.barplot(cornet_model.asignatures)
 ```
 
-![CorrNMF signatures](images/corrnmf-signatures.png)
+![Cornet signatures](images/cornet-signatures.png)
 
-CorrNMF stores signature offsets in `.obs["offsets"]`.
+Cornet stores signature offsets in `.obs["offsets"]`.
 
 ```python
-corr_model.asignatures.obs["offsets"]
+cornet_model.asignatures.obs["offsets"]
 ```
 
 Reduce the dimensionality of sample and signature embeddings jointly with UMAP. Signature points are drawn on top of sample points using explicit z-order annotations, and signature labels are passed to `so.pl.embedding_multiple`.
 
 ```python
-corr_model.adata.obs["color_embeddings"] = np.where(
-    corr_model.adata.obs["hrd_label"].astype(bool),
+cornet_model.adata.obs["color_embeddings"] = np.where(
+    cornet_model.adata.obs["hrd_label"].astype(bool),
     "#d55e00",
     "#0072b2",
 )
-corr_model.adata.obs["zorder_embeddings"] = 1
-corr_model.asignatures.obs["color_embeddings"] = "black"
-corr_model.asignatures.obs["zorder_embeddings"] = 2
+cornet_model.adata.obs["zorder_embeddings"] = 1
+cornet_model.asignatures.obs["color_embeddings"] = "black"
+cornet_model.asignatures.obs["zorder_embeddings"] = 2
 
 so.tl.reduce_dimension_multiple(
-    [corr_model.adata, corr_model.asignatures],
+    [cornet_model.adata, cornet_model.asignatures],
     basis="embeddings",
     method="umap",
     n_components=2,
@@ -272,16 +272,16 @@ so.tl.reduce_dimension_multiple(
 
 fig, ax = plt.subplots(figsize=(4, 4))
 ax = so.pl.embedding_multiple(
-    [corr_model.asignatures, corr_model.adata],
+    [cornet_model.asignatures, cornet_model.adata],
     basis="umap",
     color="color_embeddings",
     zorder="zorder_embeddings",
-    annotations=corr_model.signature_names,
+    annotations=cornet_model.signature_names,
     ax=ax,
 )
 ```
 
-![Joint UMAP of CorrNMF embeddings](images/corrnmf-embeddings-umap.png)
+![Joint UMAP of Cornet embeddings](images/cornet-embeddings-umap.png)
 
 ## 6. Choosing a Number of Signatures
 
@@ -291,7 +291,7 @@ This simple sweep is a starting point for model selection. For publication-quali
 results = []
 
 for n_signatures in range(2, 11):
-    candidate = so.models.KLNMF(
+    candidate = so.models.NMF(
         n_signatures=n_signatures,
         init_method="random",
     )

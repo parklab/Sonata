@@ -2,12 +2,12 @@
 A collection of NMF algorithms
 """
 
-from .corrnmf import CorrNMF
-from .klnmf import KLNMF
+from .cornet import Cornet
 from .mvnmf import MvNMF
+from .nmf import NMF
 
 __all__ = [
-    "CorrNMF",
-    "KLNMF",
+    "Cornet",
+    "NMF",
     "MvNMF",
 ]

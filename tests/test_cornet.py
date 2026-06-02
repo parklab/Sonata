@@ -3,10 +3,10 @@ import pandas as pd
 import pytest
 from anndata import AnnData
 
-from sonata.models import CorrNMF
+from sonata.models import Cornet
 
 PATH = "tests/test_data"
-PATH_TEST_DATA = f"{PATH}/models/corrnmf"
+PATH_TEST_DATA = f"{PATH}/models/cornet"
 
 
 @pytest.fixture
@@ -89,9 +89,9 @@ def model_init(
     asignatures_init,
     variance_init,
 ):
-    """Construct a CorrNMF model from fixture arrays."""
+    """Construct a Cornet model from fixture arrays."""
     n_signatures, dim_embeddings = asignatures_init.obsm["embeddings"].shape
-    model = CorrNMF(n_signatures=n_signatures, dim_embeddings=dim_embeddings)
+    model = Cornet(n_signatures=n_signatures, dim_embeddings=dim_embeddings)
     model.adata = adata
     model.asignatures = asignatures_init
     model.compute_exposures()
@@ -138,7 +138,7 @@ def variance_updated(path_suffix):
     return np.load(f"{PATH_TEST_DATA}/variance_updated_{path_suffix}")
 
 
-class TestUpdatesCorrNMF:
+class TestUpdatesCornet:
     def test_update_signatures(self, model_init, signatures_mat_updated):
         model_init.update_signatures()
         assert np.allclose(model_init.asignatures.X, signatures_mat_updated)
@@ -179,10 +179,10 @@ class TestUpdatesCorrNMF:
 
 
 @pytest.mark.parametrize("n_signatures,dim_embeddings", [(1, 1), (2, 1), (2, 2)])
-class TestGivenParametersCorrNMF:
+class TestGivenParametersCornet:
     @pytest.fixture
     def model(self, n_signatures, dim_embeddings):
-        return CorrNMF(
+        return Cornet(
             n_signatures=n_signatures,
             dim_embeddings=dim_embeddings,
             min_iterations=3,

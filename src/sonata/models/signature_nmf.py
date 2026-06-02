@@ -183,7 +183,7 @@ class SignatureNMF(ABC):
         """
         Initialize the standard signature and exposure parameters.
 
-        Models with additional parameters, such as CorrNMF, override this
+        Models with additional parameters, such as Cornet, override this
         method.
         """
         init_kwargs = {} if init_kwargs is None else init_kwargs.copy()

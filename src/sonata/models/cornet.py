@@ -4,20 +4,20 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 
-from ..initialization.initialize import EPSILON, initialize_corrnmf
-from . import _utils_corrnmf
-from ._utils_klnmf import samplewise_kl_divergence, update_W
+from ..initialization.initialize import EPSILON, initialize_cornet
+from . import _utils_cornet
+from ._utils_nmf import samplewise_kl_divergence, update_W
 from .signature_nmf import SignatureNMF
 
 if TYPE_CHECKING:
     from ..initialization.methods import _Init_methods
 
 
-class CorrNMF(SignatureNMF):
+class Cornet(SignatureNMF):
     """
     Deterministic batch correlated NMF.
 
-    CorrNMF refactors the exposure matrix into signature and sample offsets
+    Cornet refactors the exposure matrix into signature and sample offsets
     plus signature and sample embeddings, which lets the model learn a
     correlation structure between signatures and samples.
 
@@ -67,7 +67,7 @@ class CorrNMF(SignatureNMF):
         restructured and determined by the signature & sample offsets and
         embeddings.
         """
-        self.adata.obsm["exposures"] = _utils_corrnmf.compute_exposures(
+        self.adata.obsm["exposures"] = _utils_cornet.compute_exposures(
             self.asignatures.obs["offsets"].values,
             self.adata.obs["offsets"].values,
             self.asignatures.obsm["embeddings"],
@@ -85,7 +85,7 @@ class CorrNMF(SignatureNMF):
         """
         The evidence lower bound (ELBO)
         """
-        return _utils_corrnmf.elbo_corrnmf(
+        return _utils_cornet.elbo_cornet(
             self.adata.X,
             self.asignatures.X,
             self.adata.obsm["exposures"],
@@ -122,7 +122,7 @@ class CorrNMF(SignatureNMF):
             keyword argument for all stochastic initialization methods.
         """
         init_kwargs = {} if init_kwargs is None else init_kwargs.copy()
-        self.asignatures, self.variance = initialize_corrnmf(
+        self.asignatures, self.variance = initialize_cornet(
             self.adata,
             self.n_signatures,
             self.dim_embeddings,
@@ -142,9 +142,9 @@ class CorrNMF(SignatureNMF):
 
     def _compute_aux(self) -> np.ndarray:
         """
-        Compute the auxiliary matrix used by the CorrNMF parameter updates.
+        Compute the auxiliary matrix used by the Cornet parameter updates.
         """
-        return _utils_corrnmf.compute_aux(
+        return _utils_cornet.compute_aux(
             self.adata.X, self.asignatures.X, self.adata.obsm["exposures"]
         )
 
@@ -155,7 +155,7 @@ class CorrNMF(SignatureNMF):
             given_parameters = {}
 
         if "sample_offsets" not in given_parameters:
-            self.adata.obs["offsets"] = _utils_corrnmf.update_sample_offsets(
+            self.adata.obs["offsets"] = _utils_cornet.update_sample_offsets(
                 self.adata.X,
                 self.asignatures.obs["offsets"].values,
                 self.asignatures.obsm["embeddings"],
@@ -169,7 +169,7 @@ class CorrNMF(SignatureNMF):
             given_parameters = {}
 
         if "signature_offsets" not in given_parameters:
-            self.asignatures.obs["offsets"] = _utils_corrnmf.update_signature_offsets(
+            self.asignatures.obs["offsets"] = _utils_cornet.update_signature_offsets(
                 aux,
                 self.adata.obs["offsets"].values,
                 self.asignatures.obsm["embeddings"],
@@ -221,7 +221,7 @@ class CorrNMF(SignatureNMF):
         )
         for k, aux_row in enumerate(aux):
             embedding_init = self.asignatures.obsm["embeddings"][k, :]
-            self.asignatures.obsm["embeddings"][k, :] = _utils_corrnmf.update_embedding(
+            self.asignatures.obsm["embeddings"][k, :] = _utils_cornet.update_embedding(
                 embedding_init,
                 self.adata.obsm["embeddings"],
                 self.asignatures.obs["offsets"][k],
@@ -248,7 +248,7 @@ class CorrNMF(SignatureNMF):
         )
         for d, aux_col in enumerate(aux.T):
             embedding_init = self.adata.obsm["embeddings"][d, :]
-            self.adata.obsm["embeddings"][d, :] = _utils_corrnmf.update_embedding(
+            self.adata.obsm["embeddings"][d, :] = _utils_cornet.update_embedding(
                 embedding_init,
                 self.asignatures.obsm["embeddings"],
                 self.adata.obs["offsets"][d],

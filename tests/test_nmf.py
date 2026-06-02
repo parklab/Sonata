@@ -5,10 +5,10 @@ import pandas as pd
 import pytest
 from anndata import AnnData
 
-from sonata.models import klnmf
+from sonata.models import nmf
 
 PATH = "tests/test_data"
-PATH_TEST_DATA = f"{PATH}/models/klnmf"
+PATH_TEST_DATA = f"{PATH}/models/nmf"
 
 
 @pytest.fixture
@@ -43,7 +43,7 @@ def H_init(n_signatures):
 @pytest.fixture
 def model_init(adata, asignatures_init, H_init):
     n_signatures = asignatures_init.n_obs
-    model = klnmf.KLNMF(n_signatures=n_signatures)
+    model = nmf.NMF(n_signatures=n_signatures)
     model.adata = adata
     model.asignatures = asignatures_init
     model.adata.obsm["exposures"] = H_init.T
@@ -59,7 +59,7 @@ def test_objective_function(model_init, objective_init):
     assert np.allclose(model_init.objective_function(), objective_init)
 
 
-class TestUpdatesKLNMF:
+class TestUpdatesNMF:
     @pytest.fixture
     def WH_updated(self, n_signatures):
         with open(
@@ -80,7 +80,7 @@ class TestUpdatesKLNMF:
             given_asignatures.X = given_asignatures.X / np.sum(
                 given_asignatures.X, axis=1, keepdims=True
             )
-            model = klnmf.KLNMF(
+            model = nmf.NMF(
                 n_signatures=n_signatures,
                 min_iterations=3,
                 max_iterations=3,

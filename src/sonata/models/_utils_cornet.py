@@ -5,7 +5,7 @@ from numba import njit
 from scipy import optimize
 
 from ..initialization.initialize import EPSILON
-from ._utils_klnmf import poisson_llh
+from ._utils_nmf import poisson_llh
 
 
 @njit
@@ -52,7 +52,7 @@ def compute_aux(
     return aux
 
 
-def elbo_corrnmf(
+def elbo_cornet(
     data_mat: np.ndarray,
     signatures_mat: np.ndarray,
     exposures_mat: np.ndarray,
@@ -102,7 +102,7 @@ def update_signature_offsets(
     sample_embeddings: np.ndarray,
 ) -> np.ndarray:
     r"""
-    Compute the new signature offsets according to the update rule of CorrNMF.
+    Compute the new signature offsets according to the update rule of Cornet.
 
     Inputs
     ------
@@ -140,7 +140,7 @@ def update_sample_offsets(
     sample_embeddings: np.ndarray,
 ) -> np.ndarray:
     """
-    Compute the new sample offsets according to the update rule of CorrNMF.
+    Compute the new sample offsets according to the update rule of Cornet.
 
     Parameters
     ----------
@@ -183,7 +183,7 @@ def objective_function_embedding(
     aux_vector: np.ndarray,
 ) -> float:
     r"""
-    The negative objective function of a signature or sample embedding in CorrNMF.
+    The negative objective function of a signature or sample embedding in Cornet.
 
     Parameters
     ----------
@@ -212,7 +212,7 @@ def objective_function_embedding(
     aux_vector : np.ndarray of
         shape (n_signatures | n_samples,)
         A row or column of aux[k, d] = \sum_v X_dv * p_vkd,
-        where X is the data matrix and p are the auxiliary parameters of CorrNMF.
+        where X is the data matrix and p are the auxiliary parameters of Cornet.
         If 'embedding' is a signature embedding, the corresponding row is provided.
         If 'embedding' is a sample embedding, the corresponding column is provided.
     """
@@ -241,7 +241,7 @@ def gradient_embedding(
 ) -> np.ndarray:
     r"""
     The negative gradient of the objective function w.r.t. a signature or
-    sample embedding in CorrNMF.
+    sample embedding in Cornet.
 
     Inputs
     ------
@@ -292,7 +292,7 @@ def hessian_embedding(
 ) -> np.ndarray:
     r"""
     The negative Hessian of the objective function w.r.t. a signature or
-    sample embedding in CorrNMF.
+    sample embedding in Cornet.
 
     Inputs
     ------
