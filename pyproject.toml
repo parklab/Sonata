@@ -57,6 +57,7 @@ pytest = ">=8.3,<9"
 pre-commit = ">=4.2,<5"
 tox = ">=4.25,<5"
 types-seaborn = ">=0.13,<0.14"
+twine = "^6.2.0"
 
 [tool.pytest.ini_options]
 # /site-packages/umap/__init__.py:36: DeprecationWarning: pkg_resources is deprecated as an API.
