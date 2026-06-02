@@ -7,7 +7,7 @@ from numba import njit
 
 from ..initialization.initialize import EPSILON
 from ..utils import normalize_WH
-from ._utils_klnmf import kl_divergence, samplewise_kl_divergence, update_H
+from ._utils_nmf import kl_divergence, samplewise_kl_divergence, update_H
 from .signature_nmf import SignatureNMF
 
 if TYPE_CHECKING:

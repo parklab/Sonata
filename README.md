@@ -32,7 +32,7 @@ import sonata as so
 counts = pd.read_csv("data/hrdetect_counts_training.csv", index_col=0).T
 adata = ad.AnnData(counts)
 
-model = so.models.KLNMF(n_signatures=6)
+model = so.models.NMF(n_signatures=6)
 model.fit(adata.copy())
 
 so.pl.barplot(model.asignatures)
@@ -49,8 +49,8 @@ so.pl.embedding(model.adata, basis="umap")
 
 ## Tutorial
 
-For a complete workflow covering data preparation, KL-NMF, visualization,
-fixed signatures, CorrNMF, and simple model selection, see the
+For a complete workflow covering data preparation, NMF, visualization,
+fixed signatures, Cornet, and simple model selection, see the
 [Markdown tutorial](docs/tutorial.md). A runnable notebook with the same
 analysis and figure-generation code is available at
 [docs/tutorial.ipynb](docs/tutorial.ipynb).
@@ -59,9 +59,9 @@ analysis and figure-generation code is available at
 
 Sonata currently exposes three NMF models:
 
-- `so.models.KLNMF`: NMF with the generalized Kullback-Leibler divergence.
+- `so.models.NMF`: NMF with the generalized Kullback-Leibler divergence.
 - `so.models.MvNMF`: minimum-volume NMF.
-- `so.models.CorrNMF`: correlated NMF with sample and signature embeddings.
+- `so.models.Cornet`: correlated NMF with sample and signature embeddings.
 
 ## License
 

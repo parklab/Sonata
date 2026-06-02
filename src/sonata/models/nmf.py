@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import numpy as np
 
 from ..utils import shape_checker, type_checker
-from . import _utils_klnmf
+from . import _utils_nmf
 from .signature_nmf import SignatureNMF
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ _FITTING_KWARGS = ["weights_kl", "weights_lhalf"]
 _DEFAULT_FITTING_KWARGS = {kwarg: None for kwarg in _FITTING_KWARGS}
 
 
-class KLNMF(SignatureNMF):
+class NMF(SignatureNMF):
     """
     Decompose a mutation count matrix X into the product of a signature
     matrix W and an exposure matrix H by minimizing the weighted
@@ -56,7 +56,7 @@ class KLNMF(SignatureNMF):
         Add the unweighted samplewise Kullback-Leibler divergences
         as observation annotations to the AnnData count data.
         """
-        errors = _utils_klnmf.samplewise_kl_divergence(
+        errors = _utils_nmf.samplewise_kl_divergence(
             self.adata.X.T, self.asignatures.X.T, self.adata.obsm["exposures"].T
         )
         self.adata.obs["reconstruction_error"] = errors
@@ -66,7 +66,7 @@ class KLNMF(SignatureNMF):
         The sum of the (weighted) Kullback-Leibler divergence and the sparsity
         penalty.
         """
-        of_value = _utils_klnmf.kl_divergence(
+        of_value = _utils_nmf.kl_divergence(
             self.adata.X.T,
             self.asignatures.X.T,
             self.adata.obsm["exposures"].T,
@@ -94,7 +94,7 @@ class KLNMF(SignatureNMF):
         else:
             n_given_signatures = 0
 
-        W, H = _utils_klnmf.update_WH(
+        W, H = _utils_nmf.update_WH(
             self.adata.X.T,
             self.asignatures.X.T,
             self.adata.obsm["exposures"].T,
