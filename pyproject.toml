@@ -1,5 +1,5 @@
 [project]
-name = "sonata-learn"
+name = "sonata-tools"
 version = "0.1.0"
 description = "A Python toolkit for fitting and analyzing mutational signatures"
 readme = "README.md"

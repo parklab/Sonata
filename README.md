@@ -19,10 +19,10 @@ analysis and plotting APIs for signature workflows.
 ## Installation
 
 ```bash
-pip install sonata-learn
+pip install sonata-tools
 ```
 
-The package is installed as `sonata-learn` and imported as `sonata`.
+The package is installed as `sonata-tools` and imported as `sonata`.
 
 ## Quickstart
 
