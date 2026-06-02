@@ -1,3 +1,5 @@
+from matplotlib.colors import LinearSegmentedColormap
+
 NUCLEOTIDES = ["A", "C", "G", "T"]
 
 SBS_TYPES_6 = ["C>A", "C>G", "C>T", "T>A", "T>C", "T>G"]
@@ -53,15 +55,20 @@ COLORS_MATHEMATICA = [
 
 # Trinucleotide colors for the 96 dimensional mutation spectrum
 COLORS_TRINUCLEOTIDES = [
-    (0.33, 0.75, 0.98),
+    "#427aa1ff",
     (0.0, 0.0, 0.0),
-    (0.85, 0.25, 0.22),
+    "#d1664aff",
     (0.78, 0.78, 0.78),
-    (0.51, 0.79, 0.24),
+    "#64b3aaff",
     (0.89, 0.67, 0.72),
 ]
 
 COLORS_SBS96 = [COLORS_TRINUCLEOTIDES[i // 16] for i in range(96)]
+
+DIVERGING_PALETTE = LinearSegmentedColormap.from_list(
+    "sonata_diverging",
+    ["#427aa1ff", "#FAFAFA", "#e07a5fff"],
+)
 
 COLORS_INDEL = [
     "#FCBD6F",  # 1bp Del C
